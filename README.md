@@ -1,6 +1,6 @@
 # Health Data Dashboard – Australia
 
-This interactive dashboard visualizes key health and demographic trends in Canada using R Shiny.  
+This interactive dashboard visualizes key health and demographic trends in Australia using R Shiny.  
 It is developed as part of a mini project.
 
 ## ✅ Objectives
