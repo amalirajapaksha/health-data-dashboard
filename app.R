@@ -6,7 +6,7 @@ library(readxl)
 library(ggplot2)
 
 # --- Load your population data ---
-pop_data <- read_excel("C:/Users/MSI/Downloads/population_data/1981.xlsx")
+pop_data <- read_excel("population_pyramid_tidy.xlsx")
 pop_data$Age <- as.numeric(pop_data$Age)
 
 # --- UI ---
@@ -196,7 +196,7 @@ server <- function(input, output, session) {
     updateActionButton(session, "play_pause_btn", label = "Play", icon = icon("play"))
   })
   
-  auto_update <- reactiveTimer(1000)
+  auto_update <- reactiveTimer(500)
   observe({
     auto_update()
     isolate({
