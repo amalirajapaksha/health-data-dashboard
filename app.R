@@ -5,7 +5,7 @@ library(dplyr)
 library(readxl)
 library(ggplot2)
 
-# --- Load your population data ---
+# --- Load population data ---
 pop_data <- read_excel("population_pyramid_tidy.xlsx")
 pop_data$Age <- as.numeric(pop_data$Age)
 
@@ -19,11 +19,11 @@ ui <- dashboardPage(
       id = "tabs",
       menuItem("Home", tabName = "home"),
       
-      # --- New Main Menu with Subtabs ---
+      # --- Main Menu with Subtabs ---
       menuItem("Demography", icon = icon("users"),
                menuSubItem("Population Pyramid", tabName = "pyramid")
-               # Later you can add more subtabs like:
-               # menuSubItem("Fertility Rate", tabName = "fertility"),
+               # Later more subtabs will be added like:
+               # menuSubItem("Life Table", tabName = "life"),
                # menuSubItem("Mortality Trends", tabName = "mortality")
       )
     )
