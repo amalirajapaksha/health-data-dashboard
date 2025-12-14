@@ -9,9 +9,6 @@ library(ggplot2)
 pop_data <- read_excel("population_pyramid_tidy.xlsx")
 pop_data$Age <- as.numeric(pop_data$Age)
 
-life_table_tidy <- read_excel("life_table_tidy.xlsx")
-life_table_tidy$Age <- as.numeric(life_table_tidy$Age)
-
 # --- UI ---
 ui <- dashboardPage(
   skin = "black",
@@ -24,9 +21,7 @@ ui <- dashboardPage(
       
       # --- Main Menu with Subtabs ---
       menuItem("Demography", icon = icon("users"),
-               menuSubItem("Population Pyramid", tabName = "pyramid"),
-               menuSubItem("Life Table Functions", tabName = "life")
-               
+               menuSubItem("Population Pyramid", tabName = "pyramid")
                # Later more subtabs will be added like:
                # menuSubItem("Life Table", tabName = "life"),
                # menuSubItem("Mortality Trends", tabName = "mortality")
@@ -124,85 +119,14 @@ ui <- dashboardPage(
                        )
                 )
               )
-      ),
-      # ------------------ LIFE TABLE FUNCTIONS ------------------
-      tabItem(tabName = "life",
-              fluidRow(
-                
-                # LEFT PANEL
-                column(width = 3,
-                       box(
-                         solidHeader = TRUE,
-                         width = 12,
-                         class = "left-box",
-                         style = "background-color:#2c3e50; color:white; height:90vh;",
-                         
-                         # --- Select State ---
-                         selectInput("state_lt", "Select State:",
-                                     choices = sort(unique(life_table_tidy$State)),
-                                     selected = unique(life_table_tidy$State)[1]),
-                         
-                         # --- Select Gender ---
-                         selectInput("gender_lt", "Select Gender:",
-                                     choices = c("Male" = "Male", "Female" = "Female", "Both" = "Both"),
-                                     selected = "Both")
-                       )
-                ),
-                
-                # RIGHT PANEL
-                column(width = 9,
-                       box(
-                         title = "Life Table Functions",
-                         status = "primary",
-                         solidHeader = TRUE,
-                         width = 12,
-                         height = "75vh",
-                         
-                         tabsetPanel(
-                           tabPanel(
-                             "eₓ",
-                             div(style = "width:100%;",
-                                 plotlyOutput("ex_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the life expectancy (eₓ) by age for the selected state and gender.",
-                                       style = "font-size:20px;")
-                                 )
-                             )
-                           ),
-                           tabPanel(
-                             "qₓ",
-                             div(style = "width:100%;",
-                                 plotlyOutput("qx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the mortality rate (qₓ) by age for the selected state and gender.",
-                                       style = "font-size:20px;")
-                                 )
-                             )
-                           ),
-                           tabPanel(
-                             "S(x)",
-                             div(style = "width:100%;",
-                                 plotlyOutput("sx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the survival function (S(x)) by age for the selected state and gender.",
-                                       style = "font-size:20px;")
-                                 )
-                             )
-                           )
-                         )
-                       )
-                )
-              )
       )
     )
   )
-  
 )
 
 # --- SERVER ---
 server <- function(input, output, session) {
   
-  # ------------------ POPULATION PYRAMID ------------------
   filtered_data <- reactive({
     pop_data %>%
       filter(Year == input$year) %>%
@@ -328,73 +252,9 @@ server <- function(input, output, session) {
       layout(uirevision = "constant_pyramid")
   })
   
-  # ------------------ LIFE TABLE FUNCTIONS ------------------
-  life_filtered <- reactive({
-    df <- life_table_tidy %>% filter(State == input$state_lt)
-    if (input$gender_lt != "Both") df <- df %>% filter(Gender == input$gender_lt)
-    df
-  })
-  
-  # e(x)
-  output$ex_plot <- renderPlotly({
-    p <- ggplot(life_filtered(), aes(Age, ex, colour = Gender)) +
-      geom_line(size = 0.75) +
-      labs(title = "Life Expectancy eₓ", x = "Age", y = "eₓ")+
-      theme_minimal(base_size = 14) +
-      theme(
-        panel.background = element_rect(fill = "#f0f0f0", color = NA),
-        axis.text.x = element_text(size = 10, face = "bold"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
-        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
-      )
-    ggplotly(p) %>% layout(autosize = TRUE)
-  })
-  
-  # q(x)
-  output$qx_plot <- renderPlotly({
-    p <- ggplot(life_filtered(), aes(Age, qx, colour = Gender)) +
-      geom_line(size = 0.75) +
-      labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ" )+
-      theme_minimal(base_size = 14) +
-      theme(
-        panel.background = element_rect(fill = "#f0f0f0", color = NA),
-        axis.text.x = element_text(size = 10, face = "bold"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
-        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
-      )
-    ggplotly(p) %>% layout(autosize = TRUE)
-  })
-  
-  # S(x)
-  output$sx_plot <- renderPlotly({
-    p <- ggplot(life_filtered(), aes(Age, Sx, colour = Gender)) +
-      geom_line(size = 0.75) +
-      labs(title = "Survival Function S(x)", x = "Age", y = "S(x)")+
-      theme_minimal(base_size = 14) +
-      theme(
-        panel.background = element_rect(fill = "#f0f0f0", color = NA),
-        axis.text.x = element_text(size = 10, face = "bold"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
-        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
-      )
-    ggplotly(p) %>% layout(autosize = TRUE)
-    
-  })
-  
 }
 
 # --- Run App ---
 shinyApp(ui, server)
+
 
