@@ -358,7 +358,7 @@ server <- function(input, output, session) {
   output$qx_plot <- renderPlotly({
     p <- ggplot(life_filtered(), aes(Age, qx, colour = Gender)) +
       geom_line(size = 0.75) +
-      labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ")+
+      labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ" )+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
