@@ -4,6 +4,8 @@ library(plotly)
 library(dplyr)
 library(readxl)
 library(ggplot2)
+library(openxlsx)
+
 
 # --- Load population data ---
 pop_data <- read_excel("population_pyramid_tidy.xlsx")
@@ -24,8 +26,8 @@ ui <- dashboardPage(
       
       # --- Main Menu with Subtabs ---
       menuItem("Demography", icon = icon("users"),
-               menuSubItem("Population Pyramid", tabName = "pyramid"),
-               menuSubItem("Life Table Functions", tabName = "life")
+               menuSubItem("Life Table Functions", tabName = "life"),
+               menuSubItem("Population Pyramid", tabName = "pyramid")
                
                # Later more subtabs will be added like:
                # menuSubItem("Life Table", tabName = "life"),
@@ -145,7 +147,13 @@ ui <- dashboardPage(
                          # --- Select Gender ---
                          selectInput("gender_lt", "Select Gender:",
                                      choices = c("Male" = "Male", "Female" = "Female", "Both" = "Both"),
-                                     selected = "Both")
+                                     selected = "Both"),
+                         
+                         hr(),
+                         
+                         valueBoxOutput("kpi_e0_male", width = NULL),
+                         valueBoxOutput("kpi_e0_female", width = NULL),
+                         downloadButton("download_lt_merged", "Download Life Table (Male & Female)")
                        )
                 ),
                 
@@ -329,16 +337,91 @@ server <- function(input, output, session) {
   })
   
   # ------------------ LIFE TABLE FUNCTIONS ------------------
+  
+  # --- KPIs ---
+  
+  life_birth <- reactive({
+    life_table_tidy %>%
+      filter(State == input$state_lt, Age == 0)
+  })
+  
+  output$kpi_e0_male <- renderValueBox({
+    df <- life_birth() %>% filter(Gender == "Male")
+    
+    valueBox(
+      value = round(df$ex, 1),
+      subtitle = HTML("Life Expectancy at Birth<br><b>e<sub>0</sub> (Male)</b>"),
+      icon = icon("male"),
+      color = "blue"
+    )
+  })
+  
+  output$kpi_e0_female <- renderValueBox({
+    df <- life_birth() %>% filter(Gender == "Female")
+    
+    valueBox(
+      value = round(df$ex, 1),
+      subtitle = HTML("Life Expectancy at Birth<br><b>e<sub>0</sub> (Female)</b>"),
+      icon = icon("female"),
+      color = "red"
+    )
+  })
+  
+  # ---Download---
+  
+  life_download_merged <- reactive({
+    
+    male <- life_table_tidy %>%
+      filter(State == input$state_lt, Gender == "Male") %>%
+      select(Age, lx, qx, Lx, ex) %>%
+      rename_with(~ paste0(., "_Male"), -Age)
+    
+    female <- life_table_tidy %>%
+      filter(State == input$state_lt, Gender == "Female") %>%
+      select(Age, lx, qx, Lx, ex) %>%
+      rename_with(~ paste0(., "_Female"), -Age)
+    
+    full_join(male, female, by = "Age") %>%
+      arrange(Age)
+  })
+  
+  output$download_lt_merged <- downloadHandler(
+    filename = function() {
+      paste0("Life_Table_", input$state_lt, "_Male_Female.xlsx")
+    },
+    content = function(file) {
+      openxlsx::write.xlsx(
+        life_download_merged(),
+        file,
+        rowNames = FALSE
+      )
+    }
+  )
+  
+  
+  
+  # --- Life Table Function Plots ---
+  
   life_filtered <- reactive({
     df <- life_table_tidy %>% filter(State == input$state_lt)
     if (input$gender_lt != "Both") df <- df %>% filter(Gender == input$gender_lt)
     df
   })
   
+  
+  default_gender_colors <- c(
+    "Male" = "#619CFF",
+    "Female" = "#F8766D"
+  )
+  
+  
+  
+  
   # e(x)
   output$ex_plot <- renderPlotly({
     p <- ggplot(life_filtered(), aes(Age, ex, colour = Gender)) +
       geom_line(size = 0.75) +
+      scale_colour_manual(values = default_gender_colors) +
       labs(title = "Life Expectancy eₓ", x = "Age", y = "eₓ")+
       theme_minimal(base_size = 14) +
       theme(
@@ -358,6 +441,7 @@ server <- function(input, output, session) {
   output$qx_plot <- renderPlotly({
     p <- ggplot(life_filtered(), aes(Age, qx, colour = Gender)) +
       geom_line(size = 0.75) +
+      scale_colour_manual(values = default_gender_colors) +
       labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ" )+
       theme_minimal(base_size = 14) +
       theme(
@@ -377,6 +461,7 @@ server <- function(input, output, session) {
   output$sx_plot <- renderPlotly({
     p <- ggplot(life_filtered(), aes(Age, Sx, colour = Gender)) +
       geom_line(size = 0.75) +
+      scale_colour_manual(values = default_gender_colors) +
       labs(title = "Survival Function S(x)", x = "Age", y = "S(x)")+
       theme_minimal(base_size = 14) +
       theme(
