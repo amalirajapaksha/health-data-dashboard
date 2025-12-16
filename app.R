@@ -26,6 +26,7 @@ ui <- dashboardPage(
       
       # --- Main Menu with Subtabs ---
       menuItem("Demography", icon = icon("users"),
+               menuSubItem("Popultion Trends", tabName = "trend"),
                menuSubItem("Life Table Functions", tabName = "life"),
                menuSubItem("Population Pyramid", tabName = "pyramid")
                
