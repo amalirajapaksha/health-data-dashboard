@@ -281,7 +281,7 @@ server <- function(input, output, session) {
     updateActionButton(session, "play_pause_btn", label = "Play", icon = icon("play"))
   })
   
-  auto_update <- reactiveTimer(500)
+  auto_update <- reactiveTimer(800)
   observe({
     auto_update()
     isolate({
