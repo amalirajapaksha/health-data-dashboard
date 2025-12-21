@@ -125,7 +125,19 @@ ui <- dashboardPage(
               status = "primary",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("current_pop_plot", height = "300px")
+              plotlyOutput("current_pop_plot", height = "300px"),
+              
+              br(),
+              
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                tags$ul(
+                  style = "font-size:15px; font-weight:500; margin-bottom:0;",
+                  tags$li("New South Wales has the largest population in Australia for both males and females, followed by Victoria and Queensland."),
+                  tags$li("In every state and territory, the female population is slightly higher than the male population."),
+                  tags$li("The Northern Territory has the smallest population among all states and territories for both genders.")
+               )
+              )
             )
           )
         ),
@@ -241,7 +253,7 @@ ui <- dashboardPage(
                          
                          valueBoxOutput("kpi_e0_male", width = NULL),
                          valueBoxOutput("kpi_e0_female", width = NULL),
-                         downloadButton("download_lt_merged", "Download Life Table (Male & Female)")
+                         downloadButton("download_lt_merged", "Download Life Table")
                        )
                 ),
                 
@@ -252,15 +264,15 @@ ui <- dashboardPage(
                          status = "primary",
                          solidHeader = TRUE,
                          width = 12,
-                         height = "75vh",
+                         height = "550px",
                          
                          tabsetPanel(
                            tabPanel(
                              "eₓ",
                              div(style = "width:100%;",
-                                 plotlyOutput("ex_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the life expectancy (eₓ) by age for the selected state and gender.",
+                                 plotlyOutput("ex_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Throughout the lifespan, women tend to live longer than men, reflecting consistently higher life expectancy for females at all ages.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -268,9 +280,9 @@ ui <- dashboardPage(
                            tabPanel(
                              "qₓ",
                              div(style = "width:100%;",
-                                 plotlyOutput("qx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the mortality rate (qₓ) by age for the selected state and gender.",
+                                 plotlyOutput("qx_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Mortality is low and similar for both genders at younger ages, but at older ages, men experience higher mortality than women.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -278,9 +290,9 @@ ui <- dashboardPage(
                            tabPanel(
                              "S(x)",
                              div(style = "width:100%;",
-                                 plotlyOutput("sx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the survival function (S(x)) by age for the selected state and gender.",
+                                 plotlyOutput("sx_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Although survival is similar for males and females at younger ages, females show higher survival at older ages.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -364,11 +376,11 @@ server <- function(input, output, session) {
     p <- ggplot(df, aes(Year, Population, colour = Gender)) +
       geom_line(size = 1) +
       scale_y_continuous(
-        labels = function(x) paste0(formatC(x / 1e6, format = "f", digits = 2, big.mark = ","), " M")
+        labels = function(x) formatC(x / 1e6, format = "f", digits = 0, big.mark = ",")
       ) +
       labs(
         x = "Year",
-        y = "Population"
+        y = "Population (millions)"
       ) +
       theme_minimal(base_size = 13) +
       theme(
@@ -377,7 +389,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
+        legend.position = "bottom",
+        legend.direction = "horizontal",
         legend.text = element_text(face = "bold"),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
@@ -406,11 +419,11 @@ server <- function(input, output, session) {
     p <- ggplot(df, aes(`Age group (years)`, Population)) +
       geom_col(fill = "#004080", width = 0.8) +
       scale_y_continuous(
-        labels = function(x) formatC(x, format = "d", big.mark = ",")
+        labels = function(x) formatC(x / 1e6, format = "f", digits = 1, big.mark = ",")
       ) +
       labs(
         x = "Age Group",
-        y = "Population"
+        y = "Population (millions)"
       ) +
       theme_minimal(base_size = 13) +
       theme(
