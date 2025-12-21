@@ -382,8 +382,14 @@ server <- function(input, output, session) {
       ) +
       theme_minimal(base_size = 13) +
       theme(
-        axis.text.x = element_text(angle = 60, hjust = 1, face = "bold"),
-        plot.title = element_text(face = "bold", hjust = 0.5)
+        panel.background = element_rect(fill = "#f0f0f0", color = NA),
+        axis.text.x = element_text(size = 10, angle = 90, hjust = 0.5, face = "bold"),
+        axis.text.y = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(size = 12, face = "bold"),
+        axis.title.y = element_text(size = 12, face = "bold"),
+        legend.position = "top",
+        legend.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     
     ggplotly(p)
