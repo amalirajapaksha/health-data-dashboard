@@ -137,7 +137,7 @@ ui <- dashboardPage(
             selectInput(
               "trend_state",
               "Select State:",
-              choices = colnames(pop_trend)[-1], # all columns except Year
+              choices = colnames(pop_trend)[c(-1, -10)], # all columns except Year
               selected = "Australia"
             )
           )
