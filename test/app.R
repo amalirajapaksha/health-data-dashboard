@@ -148,7 +148,7 @@ ui <- dashboardPage(
           column(
             width = 6,
             box(
-              title = "Population Trend",
+              title = uiOutput("trend_box_title"),
               status = "info",
               solidHeader = TRUE,
               width = 12,
@@ -158,7 +158,7 @@ ui <- dashboardPage(
           column(
             width = 6,
             box(
-              title = "Age Distribution",
+              title = uiOutput("age_box_title"),
               status = "info",
               solidHeader = TRUE,
               width = 12,
@@ -248,7 +248,7 @@ ui <- dashboardPage(
                 # RIGHT PANEL
                 column(width = 9,
                        box(
-                         title = "Life Table Functions",
+                         title = "Life Table Functions 2022-2024",
                          status = "primary",
                          solidHeader = TRUE,
                          width = 12,
@@ -314,6 +314,11 @@ server <- function(input, output, session) {
     )) +
       geom_col(position = "dodge", width = 0.7) +
       coord_flip() +
+      
+      scale_y_continuous(
+        labels = function(x) formatC(x, format = "d", big.mark = ",")
+      ) +
+      
       scale_fill_manual(
         values = c(
           "Males" = "#1f4e79",
@@ -321,16 +326,22 @@ server <- function(input, output, session) {
         )
       ) +
       labs(
-        title = "Current Population by State and Gender",
         x = "",
         y = "Population",
         fill = "Gender"
       ) +
       theme_minimal(base_size = 13) +
       theme(
-        axis.text = element_text(face = "bold"),
+        panel.background = element_rect(fill = "#f0f0f0", color = NA),
+        # 🔹 GRID LINES (VISIBLE)
+        panel.grid = element_line(color = "white", size = 1),
+        axis.text.x = element_text(size = 10, face = "bold"),
+        axis.text.y = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(size = 12, face = "bold"),
+        axis.title.y = element_text(size = 12, face = "bold"),
         legend.position = "top",
-        plot.title = element_text(face = "bold", hjust = 0.5)
+        legend.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     
     ggplotly(p)
@@ -338,7 +349,13 @@ server <- function(input, output, session) {
   
   
   
+  
   # --- Population Trend ---
+  
+  output$trend_box_title <- renderUI({
+    paste0("Population Trend – ", input$trend_state)
+  })
+  
   output$pop_trend_plot <- renderPlotly({
     
     df <- pop_trend_long %>%
@@ -346,15 +363,23 @@ server <- function(input, output, session) {
     
     p <- ggplot(df, aes(Year, Population, colour = Gender)) +
       geom_line(size = 1) +
+      scale_y_continuous(
+        labels = function(x) paste0(formatC(x / 1e6, format = "f", digits = 2, big.mark = ","), " M")
+      ) +
       labs(
-        title = paste("Population Trend –", input$trend_state),
         x = "Year",
         y = "Population"
       ) +
       theme_minimal(base_size = 13) +
       theme(
+        panel.background = element_rect(fill = "#f0f0f0", color = NA),
+        axis.text.x = element_text(size = 10, angle = 0, hjust = 0.5, face = "bold"),
+        axis.text.y = element_text(size = 10, face = "bold"),
+        axis.title.x = element_text(size = 12, face = "bold"),
+        axis.title.y = element_text(size = 12, face = "bold"),
         legend.position = "top",
-        plot.title = element_text(face = "bold", hjust = 0.5)
+        legend.text = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     
     ggplotly(p)
@@ -363,6 +388,11 @@ server <- function(input, output, session) {
   
   
   # --- Age Distribution ---
+  
+  output$age_box_title <- renderUI({
+    paste0("Age Distribution, Mar 2025 – ", input$trend_state)
+  })
+  
   output$age_dist_plot <- renderPlotly({
     
     df <- age_dis_long %>%
@@ -375,8 +405,10 @@ server <- function(input, output, session) {
     
     p <- ggplot(df, aes(`Age group (years)`, Population)) +
       geom_col(fill = "#004080", width = 0.8) +
+      scale_y_continuous(
+        labels = function(x) formatC(x, format = "d", big.mark = ",")
+      ) +
       labs(
-        title = paste("Age Distribution –", input$trend_state),
         x = "Age Group",
         y = "Population"
       ) +
@@ -468,7 +500,7 @@ server <- function(input, output, session) {
     updateActionButton(session, "play_pause_btn", label = "Play", icon = icon("play"))
   })
   
-  auto_update <- reactiveTimer(800)
+  auto_update <- reactiveTimer(1000)
   observe({
     auto_update()
     isolate({
