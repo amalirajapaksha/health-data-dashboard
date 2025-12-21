@@ -423,7 +423,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, ex, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Life Expectancy eₓ", x = "Age", y = "eₓ")+
+      labs(title = paste0("Life Expectancy eₓ - ", input$state_lt), x = "Age", y = "eₓ")+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
@@ -443,7 +443,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, qx, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ" )+
+      labs(title = paste0("Mortality Rate qₓ - ", input$state_lt), x = "Age", y = "qₓ" )+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
@@ -463,7 +463,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, Sx, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Survival Function S(x)", x = "Age", y = "S(x)")+
+      labs(title = paste0("Survival Function S(x) - ", input$state_lt), x = "Age", y = "S(x)")+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
