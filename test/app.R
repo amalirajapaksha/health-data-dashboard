@@ -5,6 +5,7 @@ library(dplyr)
 library(readxl)
 library(ggplot2)
 library(openxlsx)
+library(tidyr)
 
 
 # --- Load population data ---
@@ -13,6 +14,33 @@ pop_data$Age <- as.numeric(pop_data$Age)
 
 life_table_tidy <- read_excel("life_table_tidy.xlsx")
 life_table_tidy$Age <- as.numeric(life_table_tidy$Age)
+
+age_dis <- read_excel("age_distribution_tidy.xlsx")
+
+current_pop_dis <- read_excel("current_population_distribution_tidy.xlsx")
+
+pop_trend <- read_excel("population_trend_tidy.xlsx")
+
+
+
+
+# ---- Age distribution ----
+age_dis_long <- age_dis %>%
+  pivot_longer(
+    cols = -`Age group (years)`,
+    names_to = "State",
+    values_to = "Population"
+  )
+
+# ---- Population trend ----
+pop_trend_long <- pop_trend %>%
+  pivot_longer(
+    cols = -c(Year, Gender),
+    names_to = "State",
+    values_to = "Population"
+  )
+
+
 
 # --- UI ---
 ui <- dashboardPage(
@@ -26,6 +54,7 @@ ui <- dashboardPage(
       
       # --- Main Menu with Subtabs ---
       menuItem("Demography", icon = icon("users"),
+               menuSubItem("Popultion Trends", tabName = "trend"),
                menuSubItem("Life Table Functions", tabName = "life"),
                menuSubItem("Population Pyramid", tabName = "pyramid")
                
@@ -83,7 +112,66 @@ ui <- dashboardPage(
               )
       ),
       
-      # --- Population Pyramid (Subtab under Demography) ---
+      # --- Population Trend ---
+      tabItem(
+        tabName = "trend",
+        
+        # Top: Current population
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Current Population by State and Gender",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("current_pop_plot", height = "300px")
+            )
+          )
+        ),
+        
+        # Dropdown for state selection (controls bottom plots)
+        fluidRow(
+          column(
+            width = 3,
+            selectInput(
+              "trend_state",
+              "Select State:",
+              choices = colnames(pop_trend)[-1], # all columns except Year
+              selected = "Australia"
+            )
+          )
+        ),
+        
+        # Bottom: side-by-side plots
+        fluidRow(
+          column(
+            width = 6,
+            box(
+              title = "Population Trend",
+              status = "info",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("pop_trend_plot", height = "400px")
+            )
+          ),
+          column(
+            width = 6,
+            box(
+              title = "Age Distribution",
+              status = "info",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("age_dist_plot", height = "400px")
+            )
+          )
+        )
+      ),
+      
+      
+      
+      
+      # --- Population Pyramid  ---
       tabItem(tabName = "pyramid",
               fluidRow(
                 column(width = 3,
@@ -210,6 +298,100 @@ ui <- dashboardPage(
 # --- SERVER ---
 server <- function(input, output, session) {
   
+  # ------------------ POPULATION TREND ------------------
+  
+  # --- Current Population by State and Gender ---
+  output$current_pop_plot <- renderPlotly({
+    
+    df <- current_pop_dis %>%
+      group_by(State, Gender) %>%
+      summarise(Population = sum(Population), .groups = "drop")
+    
+    p <- ggplot(df, aes(
+      x = reorder(State, Population),
+      y = Population,
+      fill = Gender
+    )) +
+      geom_col(position = "dodge", width = 0.7) +
+      coord_flip() +
+      scale_fill_manual(
+        values = c(
+          "Males" = "#1f4e79",
+          "Females" = "#8b1a1a"
+        )
+      ) +
+      labs(
+        title = "Current Population by State and Gender",
+        x = "",
+        y = "Population",
+        fill = "Gender"
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        axis.text = element_text(face = "bold"),
+        legend.position = "top",
+        plot.title = element_text(face = "bold", hjust = 0.5)
+      )
+    
+    ggplotly(p)
+  })
+  
+  
+  
+  # --- Population Trend ---
+  output$pop_trend_plot <- renderPlotly({
+    
+    df <- pop_trend_long %>%
+      filter(State == input$trend_state)
+    
+    p <- ggplot(df, aes(Year, Population, colour = Gender)) +
+      geom_line(size = 1) +
+      labs(
+        title = paste("Population Trend –", input$trend_state),
+        x = "Year",
+        y = "Population"
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        legend.position = "top",
+        plot.title = element_text(face = "bold", hjust = 0.5)
+      )
+    
+    ggplotly(p)
+  })
+  
+  
+  
+  # --- Age Distribution ---
+  output$age_dist_plot <- renderPlotly({
+    
+    df <- age_dis_long %>%
+      filter(State == input$trend_state)
+    
+    df$`Age group (years)` <- factor(
+      df$`Age group (years)`,
+      levels = unique(df$`Age group (years)`)
+    )
+    
+    p <- ggplot(df, aes(`Age group (years)`, Population)) +
+      geom_col(fill = "#004080", width = 0.8) +
+      labs(
+        title = paste("Age Distribution –", input$trend_state),
+        x = "Age Group",
+        y = "Population"
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        plot.title = element_text(face = "bold", hjust = 0.5)
+      )
+    
+    ggplotly(p)
+  })
+  
+  
+  
+  
   # ------------------ POPULATION PYRAMID ------------------
   filtered_data <- reactive({
     pop_data %>%
@@ -280,7 +462,7 @@ server <- function(input, output, session) {
     updateActionButton(session, "play_pause_btn", label = "Play", icon = icon("play"))
   })
   
-  auto_update <- reactiveTimer(500)
+  auto_update <- reactiveTimer(800)
   observe({
     auto_update()
     isolate({
@@ -422,7 +604,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, ex, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Life Expectancy eₓ", x = "Age", y = "eₓ")+
+      labs(title = paste0("Life Expectancy eₓ - ", input$state_lt), x = "Age", y = "eₓ")+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
@@ -442,7 +624,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, qx, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Mortality Rate qₓ", x = "Age", y = "qₓ" )+
+      labs(title = paste0("Mortality Rate qₓ - ", input$state_lt), x = "Age", y = "qₓ" )+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
@@ -462,7 +644,7 @@ server <- function(input, output, session) {
     p <- ggplot(life_filtered(), aes(Age, Sx, colour = Gender)) +
       geom_line(size = 0.75) +
       scale_colour_manual(values = default_gender_colors) +
-      labs(title = "Survival Function S(x)", x = "Age", y = "S(x)")+
+      labs(title = paste0("Survival Function S(x) - ", input$state_lt), x = "Age", y = "S(x)")+
       theme_minimal(base_size = 14) +
       theme(
         panel.background = element_rect(fill = "#f0f0f0", color = NA),
