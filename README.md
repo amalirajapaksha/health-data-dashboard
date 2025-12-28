@@ -13,10 +13,10 @@ It is developed as part of the mini project for STA 322 2.0 Medical Statistics 2
 <table>
 <tr>
 <td>
-<img src="images/population_pyramid.png" alt="pop pyramid" width="500"/>
+<img src="images/population_pyramid.png" alt="pop pyramid" width="600"/>
 </td>
 <td>
-<img src="images/current_population.png" alt="current pop" width="500"/>
+<img src="images/current_population.png" alt="current pop" width="600"/>
 </td>
 </tr>
 </table> 
