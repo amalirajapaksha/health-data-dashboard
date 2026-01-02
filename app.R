@@ -175,8 +175,8 @@ ui <- dashboardPage(
                     tags$li("This chart shows Australia’s population growth from 1980 to 2024, with separate lines for males and females."),
                     tags$li("Both populations follow a similar upward trend, increasing steadily over time, indicating long-term sustained population growth."), 
                     tags$li("Growth remains gradual until the early 2000s, followed by a clear acceleration after around 2005, consistent with higher net overseas migration and economic expansion."), 
-                    tags$li("Throughout the entire period, the female population remains slightly higher than the male population."),
-                    )
+                    tags$li("Throughout the entire period, the female population remains slightly higher than the male population.")
+        
                   )
                 )
               )
