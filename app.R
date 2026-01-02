@@ -164,7 +164,22 @@ ui <- dashboardPage(
               status = "info",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("pop_trend_plot", height = "400px")
+              plotlyOutput("pop_trend_plot", height = "400px"),
+              conditionalPanel(
+                condition = "input.trend_state == 'Australia'",
+                br(),
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                  tags$ul(
+                    style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                    tags$li("This chart shows Australia’s population growth from 1980 to 2024, with separate lines for males and females."),
+                    tags$li("Both populations follow a similar upward trend, increasing steadily over time, indicating long-term sustained population growth."), 
+                    tags$li("Growth remains gradual until the early 2000s, followed by a clear acceleration after around 2005, consistent with higher net overseas migration and economic expansion."), 
+                    tags$li("Throughout the entire period, the female population remains slightly higher than the male population."),
+                    )
+                  )
+                )
+              )
             )
           ),
           column(
@@ -222,7 +237,23 @@ ui <- dashboardPage(
                          status = "primary",
                          solidHeader = TRUE,
                          width = 12,
-                         plotlyOutput("pyramidPlot", height = "calc(90vh)")
+                         plotlyOutput("pyramidPlot", height = "calc(90vh)"),
+                         div(
+                           style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                           tags$ul(
+                             style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                             tags$li(
+                               "Australia's population has doubled since 1981, growing from 15 million to 27.3 million people due to immigration and economic prosperity."
+                             ),
+                             tags$li(
+                               "The constrictive shape of the current population pyramid indicates an ageing population with fewer young people and lower birth rates, suggesting that future population growth may slow or even decline unless birth rates rise or immigration increases."
+                             ),   
+                             tags$li(  
+                               "This demographic trend presents substantial challenges for economic growth, pension sustainability, and healthcare systems. "
+                             )
+                           )
+                         )
+                         
                        )
                 )
               )
@@ -389,8 +420,7 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "bottom",
-        legend.direction = "horizontal",
+        legend.position = "top",
         legend.text = element_text(face = "bold"),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
