@@ -189,7 +189,22 @@ ui <- dashboardPage(
               status = "info",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("age_dist_plot", height = "400px")
+              plotlyOutput("age_dist_plot", height = "400px"),
+              
+              # Only show this for Australia
+              conditionalPanel(
+                condition = "input.trend_state == 'Australia'",
+                br(),
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                  tags$ul(
+                    style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                    tags$li("The youth population (ages 0-14) accounts for 17.63% of Australia's total population, or about 4.8 million people, which has important implications for education planning and future workforce supply."),
+                    tags$li("The working-age population (ages 15-64) makes up 65.1% of the population, totaling approximately 17.7 million people, and represents the main source of economic productivity and tax revenue."),
+                    tags$li("The elderly population (ages 65 and over) represents 17.3% of the total population, or around 4.7 million people, placing increasing pressure on healthcare, pension systems, and social services.")
+                  )
+                )
+              )
             )
           )
         )
@@ -447,7 +462,7 @@ server <- function(input, output, session) {
     )
     
     p <- ggplot(df, aes(`Age group (years)`, Population)) +
-      geom_col(fill = "#004080", width = 0.8) +
+      geom_col(fill = "#5A5AFF", width = 0.8) +
       scale_y_continuous(
         labels = function(x) formatC(x / 1e6, format = "f", digits = 1, big.mark = ",")
       ) +
