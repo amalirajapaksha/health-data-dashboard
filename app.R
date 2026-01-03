@@ -23,7 +23,6 @@ pop_trend <- read_excel("population_trend_tidy.xlsx")
 
 
 
-
 # ---- Age distribution ----
 age_dis_long <- age_dis %>%
   pivot_longer(
@@ -149,7 +148,7 @@ ui <- dashboardPage(
             selectInput(
               "trend_state",
               "Select State:",
-              choices = colnames(pop_trend)[c(-1, -10)], # all columns except Year
+              choices = colnames(pop_trend)[c(-1, -11)], # all columns except Year
               selected = "Australia"
             )
           )
@@ -172,10 +171,10 @@ ui <- dashboardPage(
                   style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
                   tags$ul(
                     style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
-                    tags$li("This chart shows Australia’s population growth from 1980 to 2024, with separate lines for males and females."),
+                    tags$li("This chart shows Australia’s population growth from 1971 to 2024, with separate lines for males and females."),
                     tags$li("Both populations follow a similar upward trend, increasing steadily over time, indicating long-term sustained population growth."), 
                     tags$li("Growth remains gradual until the early 2000s, followed by a clear acceleration after around 2005, consistent with higher net overseas migration and economic expansion."), 
-                    tags$li("Throughout the entire period, the female population remains slightly higher than the male population.")
+                    tags$li("After 1990, the female population remains slightly higher than the male population.")
         
                   )
                 )
@@ -199,9 +198,9 @@ ui <- dashboardPage(
                   style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
                   tags$ul(
                     style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
-                    tags$li("The youth population (ages 0-14) accounts for 17.63% of Australia's total population, or about 4.8 million people, which has important implications for education planning and future workforce supply."),
-                    tags$li("The working-age population (ages 15-64) makes up 65.1% of the population, totaling approximately 17.7 million people, and represents the main source of economic productivity and tax revenue."),
-                    tags$li("The elderly population (ages 65 and over) represents 17.3% of the total population, or around 4.7 million people, placing increasing pressure on healthcare, pension systems, and social services.")
+                    tags$li("The youth population (0-14) accounts for 17.63% of Australia's total population, or about 4.8 million people, which has important implications for education planning and future workforce supply."),
+                    tags$li("The working-age population (15-64) makes up 65.1% of the population, totaling approximately 17.7 million people, and represents the main source of economic productivity and tax revenue."),
+                    tags$li("The elderly population (65+) represents 17.3% of the total population, or around 4.7 million people, placing increasing pressure on healthcare, pension systems, and social services.")
                   )
                 )
               )
