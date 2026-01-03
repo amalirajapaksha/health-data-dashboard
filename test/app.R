@@ -21,6 +21,9 @@ current_pop_dis <- read_excel("current_population_distribution_tidy.xlsx")
 
 pop_trend <- read_excel("population_trend_tidy.xlsx")
 
+age_distribution_calculations <- read_excel("age_distribution_calculations.xlsx")
+age_group_comparison <- age_distribution_calculations[1:6,7:9]
+
 
 
 
@@ -39,6 +42,19 @@ pop_trend_long <- pop_trend %>%
     names_to = "State",
     values_to = "Population"
   )
+
+# --- Age structure comparison ---
+pop_percent <- age_group_comparison %>%
+  group_by(Year) %>%
+  mutate(
+    Percentage = Population / sum(Population) * 100
+  ) %>%
+  ungroup()
+
+pop_percent$`Age Group` <- factor(
+  pop_percent$`Age Group`,
+  levels = c("Young (0-14)", "Working Age (15-64)", "Elderly (65+)")
+)
 
 
 
@@ -100,17 +116,142 @@ ui <- dashboardPage(
       "))
     ),
     
-    tabItems(
-      # --- Home Tab ---
-      tabItem(tabName = "home",
-              div(class = "home-banner", "Welcome to the Australia Health Data Dashboard"),
-              fluidRow(
-                column(width = 12, br(),
-                       p(style = "text-align:center; font-size:18px; color:#333;",
-                         "This Home page is currently empty. Add widgets or information here later.")
-                )
-              )
+    tabItem(
+      tabName = "home",
+      
+      # --- Banner ---
+      div(class = "home-banner",
+          "Australia Health Data Dashboard"
       ),
+      
+      # --- Intro text ---
+      fluidRow(
+        column(
+          width = 12,
+          p(
+            style = "text-align:center; font-size:18px; color:#333; margin-bottom:30px;",
+            "An interactive platform to explore population structure, demographic trends, 
+         and health-related indicators across Australia."
+          )
+        )
+      ),
+      
+      # --- Key highlights ---
+      fluidRow(
+        valueBox(
+          value = "26+ Million",
+          subtitle = "Total Population",
+          icon = icon("users"),
+          color = "aqua",
+          width = 3
+        ),
+        valueBox(
+          value = "17.7%",
+          subtitle = "Youth Population (0–14)",
+          icon = icon("child"),
+          color = "green",
+          width = 3
+        ),
+        valueBox(
+          value = "64.2%",
+          subtitle = "Working-age Population (15–64)",
+          icon = icon("briefcase"),
+          color = "yellow",
+          width = 3
+        ),
+        valueBox(
+          value = "18.1%",
+          subtitle = "Elderly Population (65+)",
+          icon = icon("user-clock"),
+          color = "red",
+          width = 3
+        )
+      ),
+      
+      br(),
+      
+      # --- About section ---
+      fluidRow(
+        box(
+          width = 6,
+          title = "About This Dashboard",
+          status = "primary",
+          solidHeader = TRUE,
+          p(
+            "This dashboard provides a clear visual overview of Australia's demographic 
+         and health-related population indicators. It is designed to support students, 
+         researchers, and policymakers in understanding population dynamics and 
+         long-term demographic trends."
+          ),
+          p(
+            "Interactive charts and tables allow users to explore age distributions, 
+         population pyramids, and temporal changes across years."
+          )
+        ),
+        
+        # --- How to use ---
+        box(
+          width = 6,
+          title = "How to Use",
+          status = "info",
+          solidHeader = TRUE,
+          tags$ul(
+            tags$li("Navigate through tabs using the sidebar menu."),
+            tags$li("Select countries, years, or indicators using dropdown menus."),
+            tags$li("Hover over charts to view detailed values."),
+            tags$li("Use visual comparisons to identify demographic trends.")
+          )
+        )
+      ),
+      
+      br(),
+      
+      # --- Navigation guide ---
+      fluidRow(
+        box(
+          width = 12,
+          title = "Dashboard Sections",
+          status = "success",
+          solidHeader = TRUE,
+          fluidRow(
+            column(
+              width = 4,
+              tags$h4(icon("chart-bar"), " Age Distribution"),
+              p("Explore population shares by age group and year.")
+            ),
+            column(
+              width = 4,
+              tags$h4(icon("chart-area"), " Population Pyramid"),
+              p("Visualize gender-wise age structure and demographic transitions.")
+            ),
+            column(
+              width = 4,
+              tags$h4(icon("table"), " Summary Tables"),
+              p("View numerical summaries and population percentages.")
+            )
+          )
+        )
+      ),
+      
+      br(),
+      
+      # --- Footer / disclaimer ---
+      fluidRow(
+        box(
+          width = 12,
+          background = "light-blue",
+          p(
+            style = "font-size:14px;",
+            strong("Data Source: "),
+            "Australian Bureau of Statistics (ABS) and publicly available demographic datasets."
+          ),
+          p(
+            style = "font-size:13px; color:#555;",
+            "This dashboard is for educational and analytical purposes only."
+          )
+        )
+      ),
+    
       
       # --- Population Trend ---
       tabItem(
@@ -125,7 +266,19 @@ ui <- dashboardPage(
               status = "primary",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("current_pop_plot", height = "300px")
+              plotlyOutput("current_pop_plot", height = "300px"),
+              
+              br(),
+              
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                tags$ul(
+                  style = "font-size:15px; font-weight:500; margin-bottom:0;",
+                  tags$li("New South Wales has the largest population in Australia for both males and females, followed by Victoria and Queensland."),
+                  tags$li("In every state and territory, the female population is slightly higher than the male population."),
+                  tags$li("The Northern Territory has the smallest population among all states and territories for both genders.")
+                )
+              )
             )
           )
         ),
@@ -137,13 +290,13 @@ ui <- dashboardPage(
             selectInput(
               "trend_state",
               "Select State:",
-              choices = colnames(pop_trend)[-1], # all columns except Year
+              choices = colnames(pop_trend)[c(-1, -11)], # all columns except Year
               selected = "Australia"
             )
           )
         ),
         
-        # Bottom: side-by-side plots
+        # middle: side-by-side plots
         fluidRow(
           column(
             width = 6,
@@ -152,7 +305,22 @@ ui <- dashboardPage(
               status = "info",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("pop_trend_plot", height = "400px")
+              plotlyOutput("pop_trend_plot", height = "400px"),
+              conditionalPanel(
+                condition = "input.trend_state == 'Australia'",
+                br(),
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                  tags$ul(
+                    style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                    tags$li("This chart shows Australia’s population growth from 1971 to 2025, with separate lines for males and females."),
+                    tags$li("Both populations follow a similar upward trend, increasing steadily over time, indicating long-term sustained population growth."), 
+                    tags$li("Growth remains gradual until the early 2000s, followed by a clear acceleration after around 2005, consistent with higher net overseas migration and economic expansion."), 
+                    tags$li("After 1990, the female population remains slightly higher than the male population.")
+                    
+                  )
+                )
+              )
             )
           ),
           column(
@@ -162,11 +330,61 @@ ui <- dashboardPage(
               status = "info",
               solidHeader = TRUE,
               width = 12,
-              plotlyOutput("age_dist_plot", height = "400px")
+              plotlyOutput("age_dist_plot", height = "400px"),
+              
+              # Only show this for Australia
+              conditionalPanel(
+                condition = "input.trend_state == 'Australia'",
+                br(),
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                  tags$ul(
+                    style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                    tags$li("The youth population (0-14) accounts for 17.63% of Australia's total population, or about 4.8 million people, which has important implications for education planning and future workforce supply."),
+                    tags$li("The working-age population (15-64) makes up 65.1% of the population, totaling approximately 17.7 million people, and represents the main source of economic productivity and tax revenue."),
+                    tags$li("The elderly population (65+) represents 17.3% of the total population, or around 4.7 million people, placing increasing pressure on healthcare, pension systems, and social services.")
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        # Bottom: Age Structure Comparison
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Australia Age Structure Comparison: 1971 vs 2025 ",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              
+              fluidRow(
+                # LEFT: Plot
+                column(
+                  width = 8,
+                  plotlyOutput("age_structure_com", height = "300px")
+                ),
+                
+                # RIGHT: Description
+                column(
+                  width = 4,
+                  div(
+                    style = "background-color:#cfe9f6; padding:12px; border-radius:6px; height:300px; overflow-y:auto;",
+                    tags$ul(
+                      style = "font-size:15px; font-weight:500; margin-bottom:0;",
+                      tags$li("Comparing 1971 and 2025 age structures reveals Australia's demographic transformation over five decades."),
+                      tags$li("Changes in youth, working-age, and elderly proportions demonstrate the country's progression through demographic transition stages and highlight emerging challenges or opportunities."),
+                      tags$li("The proportions directly influence economic growth potential, social service demands, and policy priorities.")
+                    )
+                  )
+                )
+              )
             )
           )
         )
-      ),
+      ),  
       
       
       
@@ -210,7 +428,23 @@ ui <- dashboardPage(
                          status = "primary",
                          solidHeader = TRUE,
                          width = 12,
-                         plotlyOutput("pyramidPlot", height = "calc(90vh)")
+                         plotlyOutput("pyramidPlot", height = "calc(90vh)"),
+                         div(
+                           style = "background-color:#cfe9f6; padding:12px; border-radius:6px;",
+                           tags$ul(
+                             style = "font-size:16px; font-weight:500; color:#003366; margin-bottom:0;",
+                             tags$li(
+                               "Australia's population has doubled since 1981, growing from 15 million to 27.3 million people due to immigration and economic prosperity."
+                             ),
+                             tags$li(
+                               "The constrictive shape of the current population pyramid indicates an ageing population with fewer young people and lower birth rates, suggesting that future population growth may slow or even decline unless birth rates rise or immigration increases."
+                             ),   
+                             tags$li(  
+                               "This demographic trend presents substantial challenges for economic growth, pension sustainability, and healthcare systems. "
+                             )
+                           )
+                         )
+                         
                        )
                 )
               )
@@ -241,7 +475,7 @@ ui <- dashboardPage(
                          
                          valueBoxOutput("kpi_e0_male", width = NULL),
                          valueBoxOutput("kpi_e0_female", width = NULL),
-                         downloadButton("download_lt_merged", "Download Life Table (Male & Female)")
+                         downloadButton("download_lt_merged", "Download Life Table")
                        )
                 ),
                 
@@ -252,15 +486,15 @@ ui <- dashboardPage(
                          status = "primary",
                          solidHeader = TRUE,
                          width = 12,
-                         height = "75vh",
+                         height = "550px",
                          
                          tabsetPanel(
                            tabPanel(
                              "eₓ",
                              div(style = "width:100%;",
-                                 plotlyOutput("ex_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the life expectancy (eₓ) by age for the selected state and gender.",
+                                 plotlyOutput("ex_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Throughout the lifespan, women tend to live longer than men, reflecting consistently higher life expectancy for females at all ages.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -268,9 +502,9 @@ ui <- dashboardPage(
                            tabPanel(
                              "qₓ",
                              div(style = "width:100%;",
-                                 plotlyOutput("qx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the mortality rate (qₓ) by age for the selected state and gender.",
+                                 plotlyOutput("qx_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Mortality is low and similar for both genders at younger ages, but at older ages, men experience higher mortality than women.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -278,9 +512,9 @@ ui <- dashboardPage(
                            tabPanel(
                              "S(x)",
                              div(style = "width:100%;",
-                                 plotlyOutput("sx_plot", height = "55vh"),
-                                 div(style = "background-color:#e0f3ff; padding:10px; margin-top:10px; border-radius:5px;",
-                                     p("This plot shows the survival function (S(x)) by age for the selected state and gender.",
+                                 plotlyOutput("sx_plot", height = "400px"),
+                                 div(style = "background-color:#c6e3f5; padding:10px; margin-top:10px; border-radius:5px;",
+                                     p("Although survival is similar for males and females at younger ages, females show higher survival at older ages.",
                                        style = "font-size:20px;")
                                  )
                              )
@@ -292,8 +526,8 @@ ui <- dashboardPage(
       )
     )
   )
-  
-)
+ ) 
+
 
 # --- SERVER ---
 server <- function(input, output, session) {
@@ -364,11 +598,11 @@ server <- function(input, output, session) {
     p <- ggplot(df, aes(Year, Population, colour = Gender)) +
       geom_line(size = 1) +
       scale_y_continuous(
-        labels = function(x) paste0(formatC(x / 1e6, format = "f", digits = 2, big.mark = ","), " M")
+        labels = function(x) formatC(x / 1e6, format = "f", digits = 0, big.mark = ",")
       ) +
       labs(
         x = "Year",
-        y = "Population"
+        y = "Population (millions)"
       ) +
       theme_minimal(base_size = 13) +
       theme(
@@ -404,13 +638,13 @@ server <- function(input, output, session) {
     )
     
     p <- ggplot(df, aes(`Age group (years)`, Population)) +
-      geom_col(fill = "#004080", width = 0.8) +
+      geom_col(fill = "#5A5AFF", width = 0.8) +
       scale_y_continuous(
-        labels = function(x) formatC(x, format = "d", big.mark = ",")
+        labels = function(x) formatC(x / 1e6, format = "f", digits = 1, big.mark = ",")
       ) +
       labs(
         x = "Age Group",
-        y = "Population"
+        y = "Population (millions)"
       ) +
       theme_minimal(base_size = 13) +
       theme(
@@ -423,6 +657,29 @@ server <- function(input, output, session) {
         legend.text = element_text(face = "bold"),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
+    
+    ggplotly(p)
+  })
+  
+  
+  
+  # --- Age Stucture Comparison ---
+  output$age_structure_com <- renderPlotly({
+    
+    p <- ggplot(pop_percent,
+                aes(x = `Age Group`, y = Percentage, fill = factor(Year))) +
+      geom_bar(stat = "identity", position = position_dodge()) +
+      labs(
+        x = "Age Group",
+        y = "Population Percentage (%)",
+        fill = "Year"
+      ) +
+      scale_fill_manual(
+        values = c(
+          "1971" = "#F39C12",
+          "2025" = "#27AE60"
+        ) ) +
+      theme_minimal()
     
     ggplotly(p)
   })
