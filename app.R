@@ -21,6 +21,10 @@ current_pop_dis <- read_excel("current_population_distribution_tidy.xlsx")
 
 pop_trend <- read_excel("population_trend_tidy.xlsx")
 
+age_distribution_calculations <- read_excel("age_distribution_calculations.xlsx")
+age_group_comparison <- age_distribution_calculations[1:6,7:9]
+
+
 
 
 # ---- Age distribution ----
@@ -38,6 +42,19 @@ pop_trend_long <- pop_trend %>%
     names_to = "State",
     values_to = "Population"
   )
+
+# --- Age structure comparison ---
+pop_percent <- age_group_comparison %>%
+  group_by(Year) %>%
+  mutate(
+    Percentage = Population / sum(Population) * 100
+  ) %>%
+  ungroup()
+
+pop_percent$`Age Group` <- factor(
+  pop_percent$`Age Group`,
+  levels = c("Young (0-14)", "Working Age (15-64)", "Elderly (65+)")
+)
 
 
 
@@ -154,7 +171,7 @@ ui <- dashboardPage(
           )
         ),
         
-        # Bottom: side-by-side plots
+        # middle: side-by-side plots
         fluidRow(
           column(
             width = 6,
@@ -206,8 +223,43 @@ ui <- dashboardPage(
               )
             )
           )
+        ),
+        
+        # Bottom: Age Structure Comparison
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Australia Age Structure Comparison: 1971 vs 2025 ",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              
+              fluidRow(
+                # LEFT: Plot
+                column(
+                  width = 8,
+                  plotlyOutput("age_structure_com", height = "300px")
+                ),
+                
+                # RIGHT: Description
+                column(
+                  width = 4,
+                  div(
+                    style = "background-color:#cfe9f6; padding:12px; border-radius:6px; height:300px; overflow-y:auto;",
+                    tags$ul(
+                      style = "font-size:15px; font-weight:500; margin-bottom:0;",
+                      tags$li("Comparing 1971 and 2025 age structures reveals Australia's demographic transformation over five decades."),
+                      tags$li("Changes in youth, working-age, and elderly proportions demonstrate the country's progression through demographic transition stages and highlight emerging challenges or opportunities."),
+                      tags$li("The proportions directly influence economic growth potential, social service demands, and policy priorities.")
+                    )
+                  )
+                )
+              )
+            )
+          )
         )
-      ),
+      ),  
       
       
       
@@ -480,6 +532,29 @@ server <- function(input, output, session) {
         legend.text = element_text(face = "bold"),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
+    
+    ggplotly(p)
+  })
+  
+  
+  
+  # --- Age Stucture Comparison ---
+  output$age_structure_com <- renderPlotly({
+    
+    p <- ggplot(pop_percent,
+                aes(x = `Age Group`, y = Percentage, fill = factor(Year))) +
+      geom_bar(stat = "identity", position = position_dodge()) +
+      labs(
+        x = "Age Group",
+        y = "Population Percentage (%)",
+        fill = "Year"
+      ) +
+      scale_fill_manual(
+        values = c(
+          "1971" = "#F39C12",
+          "2025" = "#27AE60"
+        ) ) +
+      theme_minimal()
     
     ggplotly(p)
   })
