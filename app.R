@@ -471,7 +471,7 @@ server <- function(input, output, session) {
       filter(State == input$trend_state)
     
     p <- ggplot(df, aes(Year, Population, colour = Gender)) +
-      geom_line(size = 1) +
+      geom_line(size = 0.7) +
       scale_y_continuous(
         labels = function(x) formatC(x / 1e6, format = "f", digits = 0, big.mark = ",")
       ) +

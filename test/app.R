@@ -116,142 +116,194 @@ ui <- dashboardPage(
       "))
     ),
     
-    tabItem(
-      tabName = "home",
-      
-      # --- Banner ---
-      div(class = "home-banner",
-          "Australia Health Data Dashboard"
+    tabItems(
+      # --- Home Tab ---
+      tabItem( tabName = "home",
+               
+               # ================= Banner =================
+               div(
+                 class = "home-banner",
+                 tagList(
+                   icon("heartbeat"),
+                   " Australia Health & Demographic Dashboard"
+                 )
+               ),
+               
+               # ================= Academic Intro =================
+               fluidRow(
+                 column(
+                   width = 12,
+                   p(
+                     style = "text-align:center; font-size:18px; color:#2c3e50; max-width:900px; margin:auto;",
+                     "This interactive dashboard presents a comprehensive overview of Australia's 
+         population structure and demographic dynamics. It is designed to support 
+         academic research, policy analysis, and data-driven decision-making through 
+         intuitive visualisations and summary indicators."
+                   )
+                 )
+               ),
+               
+               br(),
+               
+               # ================= KPI Value Boxes =================
+               fluidRow(
+                 valueBox(
+                   value = "26+ M",
+                   subtitle = "Total Population",
+                   icon = icon("users"),
+                   color = "aqua",
+                   width = 3
+                 ),
+                 valueBox(
+                   value = "17.7%",
+                   subtitle = "Children (0–14)",
+                   icon = icon("child"),
+                   color = "green",
+                   width = 3
+                 ),
+                 valueBox(
+                   value = "64.2%",
+                   subtitle = "Working-age (15–64)",
+                   icon = icon("user-tie"),
+                   color = "yellow",
+                   width = 3
+                 ),
+                 valueBox(
+                   value = "18.1%",
+                   subtitle = "Elderly (65+)",
+                   icon = icon("user-clock"),
+                   color = "red",
+                   width = 3
+                 )
+               ),
+               
+               br(),
+               
+               # ================= Mini Charts =================
+               fluidRow(
+                 box(
+                   width = 6,
+                   title = tagList(icon("chart-pie"), " Age Composition Overview"),
+                   status = "primary",
+                   solidHeader = TRUE,
+                   plotOutput("mini_age_pie", height = "250px"),
+                   p(
+                     style = "font-size:14px; color:#555;",
+                     "This chart summarises the proportional distribution of Australia's population 
+         across major age groups."
+                   )
+                 ),
+                 
+                 box(
+                   width = 6,
+                   title = tagList(icon("chart-line"), " Population Trend Snapshot"),
+                   status = "info",
+                   solidHeader = TRUE,
+                   plotOutput("mini_population_trend", height = "250px"),
+                   p(
+                     style = "font-size:14px; color:#555;",
+                     "A high-level illustration of population growth and structural change over time."
+                   )
+                 )
+               ),
+               
+               br(),
+               
+               # ================= Clickable Navigation Cards =================
+               fluidRow(
+                 box(
+                   width = 12,
+                   title = tagList(icon("compass"), "Explore Dashboard Sections"),
+                   status = "success",
+                   solidHeader = TRUE,
+                   
+                   fluidRow(
+                     column(
+                       width = 4,
+                       tags$a(
+                         href = "#shiny-tab-age",
+                         div(
+                           style = "background:#ffffff; padding:20px; border-radius:10px; 
+                       box-shadow:0 4px 10px rgba(0,0,0,0.15); text-align:center;",
+                           icon("chart-bar", style = "font-size:40px; color:#0055aa;"),
+                           h4("Age Distribution"),
+                           p("Analyse population shares by age group and year.")
+                         )
+                       )
+                     ),
+                     
+                     column(
+                       width = 4,
+                       tags$a(
+                         href = "#shiny-tab-pyramid",
+                         div(
+                           style = "background:#ffffff; padding:20px; border-radius:10px; 
+                       box-shadow:0 4px 10px rgba(0,0,0,0.15); text-align:center;",
+                           icon("chart-area", style = "font-size:40px; color:#009688;"),
+                           h4("Population Pyramid"),
+                           p("Visualise gender-wise age structure and demographic transitions.")
+                         )
+                       )
+                     ),
+                     
+                     column(
+                       width = 4,
+                       tags$a(
+                         href = "#shiny-tab-summary",
+                         div(
+                           style = "background:#ffffff; padding:20px; border-radius:10px; 
+                       box-shadow:0 4px 10px rgba(0,0,0,0.15); text-align:center;",
+                           icon("table", style = "font-size:40px; color:#f39c12;"),
+                           h4("Summary Tables"),
+                           p("Review numerical summaries and population indicators.")
+                         )
+                       )
+                     )
+                   )
+                 )
+               ),
+               
+               br(),
+               
+               # ================= Thesis-Ready Description =================
+               fluidRow(
+                 box(
+                   width = 12,
+                   title = tagList(icon("graduation-cap"), "Academic Relevance"),
+                   status = "warning",
+                   solidHeader = TRUE,
+                   p(
+                     "The demographic indicators presented in this dashboard are particularly relevant 
+         for studies in public health, economics, social sciences, and population studies. 
+         Changes in age composition influence labour supply, healthcare demand, dependency 
+         ratios, and long-term economic sustainability."
+                   ),
+                   p(
+                     "This tool enables clear communication of demographic patterns and supports 
+         evidence-based policy discussions in academic reports, dissertations, and 
+         professional presentations."
+                   )
+                 )
+               ),
+               
+               br(),
+               
+               # ================= Footer =================
+               fluidRow(
+                 box(
+                   width = 12,
+                   background = "light-blue",
+                   p(
+                     strong("Data Source: "),
+                     "Australian Bureau of Statistics (ABS) and other publicly available demographic datasets."
+                   ),
+                   p(
+                     style = "font-size:13px; color:#555;",
+                     "This dashboard is intended for educational and analytical use."
+                   )
+                 )
+               )
       ),
-      
-      # --- Intro text ---
-      fluidRow(
-        column(
-          width = 12,
-          p(
-            style = "text-align:center; font-size:18px; color:#333; margin-bottom:30px;",
-            "An interactive platform to explore population structure, demographic trends, 
-         and health-related indicators across Australia."
-          )
-        )
-      ),
-      
-      # --- Key highlights ---
-      fluidRow(
-        valueBox(
-          value = "26+ Million",
-          subtitle = "Total Population",
-          icon = icon("users"),
-          color = "aqua",
-          width = 3
-        ),
-        valueBox(
-          value = "17.7%",
-          subtitle = "Youth Population (0–14)",
-          icon = icon("child"),
-          color = "green",
-          width = 3
-        ),
-        valueBox(
-          value = "64.2%",
-          subtitle = "Working-age Population (15–64)",
-          icon = icon("briefcase"),
-          color = "yellow",
-          width = 3
-        ),
-        valueBox(
-          value = "18.1%",
-          subtitle = "Elderly Population (65+)",
-          icon = icon("user-clock"),
-          color = "red",
-          width = 3
-        )
-      ),
-      
-      br(),
-      
-      # --- About section ---
-      fluidRow(
-        box(
-          width = 6,
-          title = "About This Dashboard",
-          status = "primary",
-          solidHeader = TRUE,
-          p(
-            "This dashboard provides a clear visual overview of Australia's demographic 
-         and health-related population indicators. It is designed to support students, 
-         researchers, and policymakers in understanding population dynamics and 
-         long-term demographic trends."
-          ),
-          p(
-            "Interactive charts and tables allow users to explore age distributions, 
-         population pyramids, and temporal changes across years."
-          )
-        ),
-        
-        # --- How to use ---
-        box(
-          width = 6,
-          title = "How to Use",
-          status = "info",
-          solidHeader = TRUE,
-          tags$ul(
-            tags$li("Navigate through tabs using the sidebar menu."),
-            tags$li("Select countries, years, or indicators using dropdown menus."),
-            tags$li("Hover over charts to view detailed values."),
-            tags$li("Use visual comparisons to identify demographic trends.")
-          )
-        )
-      ),
-      
-      br(),
-      
-      # --- Navigation guide ---
-      fluidRow(
-        box(
-          width = 12,
-          title = "Dashboard Sections",
-          status = "success",
-          solidHeader = TRUE,
-          fluidRow(
-            column(
-              width = 4,
-              tags$h4(icon("chart-bar"), " Age Distribution"),
-              p("Explore population shares by age group and year.")
-            ),
-            column(
-              width = 4,
-              tags$h4(icon("chart-area"), " Population Pyramid"),
-              p("Visualize gender-wise age structure and demographic transitions.")
-            ),
-            column(
-              width = 4,
-              tags$h4(icon("table"), " Summary Tables"),
-              p("View numerical summaries and population percentages.")
-            )
-          )
-        )
-      ),
-      
-      br(),
-      
-      # --- Footer / disclaimer ---
-      fluidRow(
-        box(
-          width = 12,
-          background = "light-blue",
-          p(
-            style = "font-size:14px;",
-            strong("Data Source: "),
-            "Australian Bureau of Statistics (ABS) and publicly available demographic datasets."
-          ),
-          p(
-            style = "font-size:13px; color:#555;",
-            "This dashboard is for educational and analytical purposes only."
-          )
-        )
-      ),
-    
       
       # --- Population Trend ---
       tabItem(
@@ -526,8 +578,8 @@ ui <- dashboardPage(
       )
     )
   )
- ) 
-
+  
+)
 
 # --- SERVER ---
 server <- function(input, output, session) {
@@ -954,6 +1006,53 @@ server <- function(input, output, session) {
     ggplotly(p) %>% layout(autosize = TRUE)
     
   })
+  
+  output$mini_age_pie <- renderPlot({
+    
+    # Example age structure data (replace with real data later)
+    age_data <- data.frame(
+      AgeGroup = c("0–14", "15–64", "65+"),
+      Percentage = c(17.7, 64.2, 18.1)
+    )
+    
+    ggplot(age_data, aes(x = "", y = Percentage, fill = AgeGroup)) +
+      geom_bar(stat = "identity", width = 1) +
+      coord_polar(theta = "y") +
+      labs(
+        title = "Population Age Composition (%)",
+        fill = "Age Group"
+      ) +
+      theme_minimal() +
+      theme(
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        panel.grid = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  })
+  
+  output$mini_population_trend <- renderPlot({
+    
+    # Example population trend data (millions)
+    pop_trend <- data.frame(
+      Year = seq(2000, 2024, by = 4),
+      Population = c(19.1, 20.3, 21.5, 22.8, 24.1, 25.4, 26.6)
+    )
+    
+    ggplot(pop_trend, aes(x = Year, y = Population)) +
+      geom_line(linewidth = 1.2, color = "#0055aa") +
+      geom_point(size = 2, color = "#0055aa") +
+      labs(
+        title = "Population Growth Trend (Millions)",
+        x = "Year",
+        y = "Population"
+      ) +
+      theme_minimal() +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  })
+  
   
 }
 
