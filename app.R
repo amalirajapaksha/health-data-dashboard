@@ -119,7 +119,7 @@ ui <- dashboardPage(
     tabItems(
       # --- Home Tab ---
       tabItem(tabName = "home",
-              div(class = "home-banner", "Welcome to the Australia Health Data Dashboard"),
+              div(class = "home-banner", "Welcome to the Australian Health Data Dashboard"),
               fluidRow(
                 column(width = 12, br(),
                        p(style = "text-align:center; font-size:18px; color:#333;",
