@@ -112,6 +112,52 @@ ui <- dashboardPage(
         @media (max-width: 1600px) { .value-box, .small-box { font-size: 90%; } .box-body { padding: 10px !important; } }
         @media (max-width: 1200px) { .home-banner { font-size: 32px; padding: 40px 5px; } }
         @media (max-width: 992px) { .col-sm-3, .col-sm-9 { width: 100%; } }
+        
+        /* ---------- Professional Home Footer ---------- */
+
+        .home-footer{
+          background:#002b45;
+          color:white;
+          padding:40px 30px;
+          margin-top:40px;
+          border-top:6px solid #0055aa;
+        }
+        
+        .home-footer h4{
+          font-weight:700;
+          margin-bottom:12px;
+        }
+        
+        .home-footer p{
+          font-size:14px;
+          color:#d9e6f2;
+        }
+        
+        .home-footer ul{
+          list-style:none;
+          padding-left:0;
+        }
+        
+        .home-footer ul li{
+          margin-bottom:6px;
+          font-size:14px;
+        }
+        
+        .home-footer a{
+          color:#9fd3ff;
+          text-decoration:none;
+        }
+        
+        .home-footer a:hover{
+          text-decoration:underline;
+        }
+        
+        .footer-bottom{
+          text-align:center;
+          margin-top:25px;
+          font-size:13px;
+          color:#bfc9d3;
+        }
       "))
     ),
     
@@ -123,6 +169,72 @@ ui <- dashboardPage(
                 column(width = 12, br(),
                        p(style = "text-align:center; font-size:18px; color:#333;",
                          "This Home page is currently empty. Add widgets or information here later.")
+                )
+              ),
+              
+              # ===== PROFESSIONAL FOOTER =====
+              
+              div(
+                class = "home-footer",
+                
+                fluidRow(
+                  
+                  # ABOUT
+                  column(
+                    width = 3,
+                    h4(icon("info-circle"), " About"),
+                    p("This dashboard presents key demographic and health indicators for Australia. 
+        It is designed to support academic research, policy analysis, and 
+        data-driven decision making using interactive visualisations.")
+                  ),
+                  
+                  # DATA SOURCES
+                  column(
+                    width = 3,
+                    h4(icon("database"), " Data Sources"),
+                    tags$ul(
+                      tags$li("Australian Bureau of Statistics (ABS)"),
+                      tags$li("Australian Life Tables 2022–2024"),
+                      tags$li("National Population Estimates"),
+                      tags$li("Public demographic datasets")
+                    )
+                  ),
+                  
+                  # REFERENCES
+                  column(
+                    width = 3,
+                    h4(icon("book"), " References"),
+                    tags$ul(
+                      tags$li("ABS Population Statistics"),
+                      tags$li("United Nations Population Division"),
+                      tags$li("OECD Demographic Indicators"),
+                      tags$li("World Health Organization Demographic Data")
+                    )
+                  ),
+                  
+                  # CONTACT / PROJECT LINKS
+                  column(
+                    width = 3,
+                    h4(icon("address-card"), " Contact"),
+                    tags$ul(
+                      tags$li(icon("user"), " Amali Rajapaksha"),
+                      tags$li(icon("envelope"), 
+                              tags$a(href="mailto:your_email@example.com",
+                                     " Email")),
+                      tags$li(icon("github"), 
+                              tags$a(href="https://github.com/",
+                                     " GitHub Project")),
+                      tags$li(icon("graduation-cap"), " Academic Dashboard Project")
+                    )
+                  )
+                ),
+                
+                hr(style="border-color:#0055aa;"),
+                
+                div(
+                  class="footer-bottom",
+                  HTML("© 2026 Health & Demographic Dashboard | Developed for Academic Research | 
+         Data provided by ABS and public demographic sources")
                 )
               )
       ),
@@ -151,7 +263,7 @@ ui <- dashboardPage(
                   tags$li("New South Wales has the largest population in Australia for both males and females, followed by Victoria and Queensland."),
                   tags$li("In every state and territory, the female population is slightly higher than the male population."),
                   tags$li("The Northern Territory has the smallest population among all states and territories for both genders.")
-               )
+                )
               )
             )
           )
@@ -191,7 +303,7 @@ ui <- dashboardPage(
                     tags$li("Both populations follow a similar upward trend, increasing steadily over time, indicating long-term sustained population growth."), 
                     tags$li("Growth remains gradual until the early 2000s, followed by a clear acceleration after around 2005, consistent with higher net overseas migration and economic expansion."), 
                     tags$li("After 1990, the female population remains slightly higher than the male population.")
-        
+                    
                   )
                 )
               )
