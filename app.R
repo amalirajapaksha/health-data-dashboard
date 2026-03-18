@@ -15,14 +15,14 @@ pop_data$Age <- as.numeric(pop_data$Age)
 life_table_tidy <- read_excel("life_table_tidy.xlsx")
 life_table_tidy$Age <- as.numeric(life_table_tidy$Age)
 
-age_dis <- read_excel("age_distribution_tidy.xlsx")
+age_dis <- read_excel("age_distribution_tidy_2025March.xlsx")
 
-current_pop_dis <- read_excel("current_population_distribution_tidy.xlsx")
+current_pop_dis <- read_excel("current_population_distribution_tidy_2025March.xlsx")
 
 pop_trend <- read_excel("population_trend_tidy.xlsx")
 
-age_distribution_calculations <- read_excel("age_distribution_calculations.xlsx")
-age_group_comparison <- age_distribution_calculations[1:6,7:9]
+age_structure_comparison_1971vs2025 <- read_excel("age_structure_comparison_1971vs2025.xlsx")
+
 
 
 
@@ -44,7 +44,7 @@ pop_trend_long <- pop_trend %>%
   )
 
 # --- Age structure comparison ---
-pop_percent <- age_group_comparison %>%
+pop_percent <- age_structure_comparison_1971vs2025 %>%
   group_by(Year) %>%
   mutate(
     Percentage = Population / sum(Population) * 100
