@@ -23,8 +23,13 @@ pop_trend <- read_excel("population_trend_tidy.xlsx")
 
 age_structure_comparison_1971vs2025 <- read_excel("age_structure_comparison_1971vs2025.xlsx")
 
+rates_data <- read_excel("ratios_tidy.xlsx")
 
+GR_by_age <- read_excel("Gender_ratio_by_age_tidy.xlsx")
 
+rates <- read_excel("rates_tidy.xlsx")
+
+causes <- read_excel("Top_15_causes_of_death_tidy.xlsx")
 
 
 # ---- Age distribution ----
@@ -56,6 +61,20 @@ pop_percent$`Age Group` <- factor(
   levels = c("Young (0-14)", "Working Age (15-64)", "Elderly (65+)")
 )
 
+# --- GR by Age ---
+rates_long <- GR_by_age %>%
+  pivot_longer(
+    cols = -year,
+    names_to = "Age",
+    values_to = "GenderRatio"
+  )
+
+# Define the order you want
+age_order <- c("Birth", "5 years old", "15 years old", "20 years old",
+               "30 years old", "40 years old", "50 years old",
+               "60 years old", "70 years old", "80 years old", "90 years old", "100+ years old")
+
+rates_long$Age <- factor(rates_long$Age, levels = age_order)
 
 
 # --- UI ---
@@ -73,7 +92,7 @@ ui <- dashboardPage(
                menuSubItem("Popultion Trends", tabName = "trend"),
                menuSubItem("Life Table Functions", tabName = "life"),
                menuSubItem("Population Pyramid", tabName = "pyramid"),
-               menuSubItem("Rates and Ratios", tabName = "rates")
+               menuSubItem("Ratios and Rates ", tabName = "rates")
                
                # Later more subtabs will be added 
       )
@@ -136,7 +155,7 @@ ui <- dashboardPage(
           column(
             width = 12,
             box(
-              title = "Current Population by State and Gender",
+              title = "Current Population by State and Gender ( Mar 2025 )",
               status = "primary",
               solidHeader = TRUE,
               width = 12,
@@ -326,16 +345,180 @@ ui <- dashboardPage(
       
       
       # --- Rate and Ratio Tab ---
-      tabItem(tabName = "rates",
-              div(class = "home-banner", "Welcome to the Australian Health Data Dashboard"),
-              fluidRow(
-                column(width = 12, br(),
-                       p(style = "text-align:center; font-size:18px; color:#333;",
-                         "This Home page is currently empty. Add widgets or information here later.")
+      tabItem(
+        tabName = "rates",
+        
+        # --- Ratios ---
+        
+        fluidRow(
+          column(
+            width = 9,
+              selectInput(
+                "ratio_select",
+                "Select Ratio:",
+                choices = c(
+                  "Child Dependency Ratio",
+                  "Aged Dependency Ratio",
+                  "Dependency Ratio",
+                  "Child-Women Ratio",
+                  "Gender Ratio"
                 )
-              )    
-      ),
-      
+            )
+          ),
+          
+          column(
+            width = 12,
+            box(
+              title = uiOutput("ratio_title"),
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("ratio_plot", height = "500px"),
+              
+              # --- Show interpretation only for Child Dependency Ratio ---
+              conditionalPanel(
+                condition = "input.ratio_select == 'Child Dependency Ratio'",
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    "The Child Dependency Ratio (CDR) shows a steady decline from about 50 in 1960 to below 30 by 2025. 
+         This indicates fewer children relative to the working-age population, reflecting demographic transition 
+         and declining fertility rates over time."
+                  ),
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    HTML("Formula: CDR = (Population aged 0–14 / Population aged 15–64) × 100")
+                  )
+                )
+              ),
+              
+              # --- Show interpretation only for Aged Dependency Ratio ---
+              conditionalPanel(
+                condition = "input.ratio_select == 'Aged Dependency Ratio'",
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    "The Aged Dependency Ratio (ADR) has risen steadily from the 1960s to 2025, 
+         moving from around 14 to nearly 28. This reflects the growing proportion of elderly 
+         individuals relative to the working-age population, with sharper increases since 2010. 
+         It signals mounting pressure on healthcare, pensions, and social support systems."
+                  ),
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    HTML("Formula: ADR = (Population aged 65+ / Population aged 15–64) × 100")
+                  )
+                )
+              ),
+              
+              # --- Show interpretation only for Dependency Ratio ---    
+              conditionalPanel(
+                condition = "input.ratio_select == 'Dependency Ratio'",
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    "From 1960 to 1990, the dependency ratio decreased from about 64 to below 50 because fewer children were being born and more people were in the working-age group. Between 1990 and 2010, the ratio reached its lowest level, meaning there were more workers than dependents, which is called a demographic dividend. From 2010 to 2025, the ratio increased again to around 55 due to an ageing population and more elderly dependents. Overall, the trend shows a change from high birth rates to a period of economic advantage, and then to increasing pressure from an ageing population."
+                  ),
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    HTML("Formula: ADR = [(Population aged 0–14) + (Population aged 65+)] / Population aged 15–64) × 100")
+                  )
+                )
+              ),
+              
+              # --- Show interpretation only for Child-Women Ratio ---
+              conditionalPanel(
+                condition = "input.ratio_select == 'Child-Women Ratio'",
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    "The Child Dependency Ratio (CDR) shows a steady decline from about 50 in 1960 to below 30 by 2025. 
+         This indicates fewer children relative to the working-age population, reflecting demographic transition 
+         and declining fertility rates over time."
+                  ),
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    HTML("Formula: CDR = (Population aged 0–4 / Female population aged 15–49) × 1000")
+                  )
+                )
+              ),
+              
+              
+              # --- Show interpretation only for Gender Ratio ---    
+              conditionalPanel(
+                condition = "input.ratio_select == 'Gender Ratio'",
+                div(
+                  style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    "In 1960, the gender ratio was above 102, showing slightly more males than females. 
+Over the decades, the ratio steadily declined, reaching below 98.5 by 2025. 
+This indicates that the female population has gradually become larger relative to the male population. 
+Overall, the trend reflects a shift from a male-heavy population in the 1960s to a female-heavy population by 2025."
+                  ),
+                  tags$p(
+                    style = "font-size:15px; font-weight:500; color:#003366;",
+                    HTML("Formula: ADR = (Total number of males / Total number of females) × 100")
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Gender Ratio by Age",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("gender_ratio_all_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "This plot shows the gender ratio for all age groups over time. 
+           A value above 100 indicates more males than females, while a value below 100 indicates more females. 
+           Over the decades, you can observe the shift from a male-heavy population in some ages to a female-heavy population in others."
+                )
+              )
+            )
+          )
+        ),
+          
+          # --- Rates ---
+          fluidRow(
+            column(
+              width = 12,
+            selectInput(
+                  "rate_select",
+                  "Select Rate:",
+                  choices = c(
+                    "Crude Birth Rate",
+                    "Crude Death Rate",
+                    "Age Standardized Death Rate",
+                    "Fertility Rate"
+                  )
+                )
+            ),
+            
+            column(
+              width = 12,
+              box(
+                title = uiOutput("rate_title"),
+                status = "primary",
+                solidHeader = TRUE,
+                width = 12,
+                plotlyOutput("rates_plot", height = "500px")
+              )
+            )
+          )
+        ),
       
       # --- LIFE TABLE FUNCTIONS ---
       tabItem(tabName = "life",
@@ -841,6 +1024,110 @@ server <- function(input, output, session) {
       )
     ggplotly(p) %>% layout(autosize = TRUE)
     
+  })
+  
+  
+  # --- Time series plots of ratios and rates ---
+  
+  output$ratio_title <- renderUI({
+    paste0("Time Series Plot of ", input$ratio_select)
+  })
+  
+  output$ratio_plot <- renderPlotly({
+    
+    p <- plot_ly(rates_data, x = ~Year)
+    
+    if (input$ratio_select == "Child Dependency Ratio") {
+      p <- p %>% add_lines(y = ~Child_Dependency_Ratio, name = "Child Dependency Ratio")
+    }
+    
+    if (input$ratio_select == "Aged Dependency Ratio") {
+      p <- p %>% add_lines(y = ~Aged_Dependency_Ratio, name = "Aged Dependency Ratio")
+    }
+    
+    if (input$ratio_select == "Dependency Ratio") {
+      p <- p %>% add_lines(y = ~Dependency_Ratio, name = "Dependency Ratio")
+    }
+    
+    if (input$ratio_select == "Gender Ratio") {
+      p <- p %>% add_lines(y = ~Gender_Ratio, name = "Gender Ratio")
+    }
+    
+    if (input$ratio_select == "Child-Women Ratio") {
+      p <- p %>% add_lines(y = ~Child_Women_Ratio, name = "Child-Women Ratio")
+    }
+    
+    p %>%
+      layout(
+        xaxis = list(title = "Year"),
+        yaxis = list(title = "Value"),
+        showlegend = TRUE
+      )
+  })
+  
+  output$gender_ratio_all_plot <- renderPlotly({
+    
+    p <- ggplot(rates_long, aes(x = year, y = GenderRatio, color = Age)) +
+      geom_line(size = 0.5) +
+      geom_point(size = 0.5) +
+      labs(
+        x = "Year",
+        y = "Gender Ratio",
+        title = "Time Series of Gender Ratio by Age"
+      ) +
+      theme_minimal(base_size = 13) +
+      theme(
+        plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(size = 10)
+      )
+    
+    ggplotly(p)
+  })
+  
+  output$rate_title <- renderUI({
+    paste0("Time Series Plot of ", input$rate_select)
+  })
+  
+  output$rates_plot <- renderPlotly({
+    
+    p <- plot_ly(rates, x = ~Year)
+    
+    if (input$rate_select == "Crude Birth Rate") {
+      p <- p %>% add_lines(
+        y = ~`Crude_Birth_Rate(per_1000)`,
+        name = "Crude Birth Rate"
+      )
+    }
+    
+    if (input$rate_select == "Crude Death Rate") {
+      p <- p %>% add_lines(
+        y = ~`Crude_Death_Rate(per_1000)`,
+        name = "Crude Death Rate"
+      )
+    }
+    
+    if (input$rate_select == "Age Standardized Death Rate") {
+      p <- p %>% add_lines(
+        y = ~`Age_Standardized_Death_Rate(per_100000)`,
+        name = "ASDR"
+      )
+    }
+    
+    if (input$rate_select == "Fertility Rate") {
+      p <- p %>% add_lines(
+        y = ~`Fertility_Rate(per_woman)`,
+        name = "Fertility Rate"
+      )
+    }
+    
+    p %>%
+      layout(
+        xaxis = list(title = "Year"),
+        yaxis = list(title = "Value"),
+        showlegend = TRUE
+      )
   })
   
 }
