@@ -8,6 +8,7 @@ library(openxlsx)
 library(tidyr)
 
 
+
 # --- Load population data ---
 pop_data <- read_excel("population_pyramid_tidy.xlsx")
 pop_data$Age <- as.numeric(pop_data$Age)
@@ -29,7 +30,6 @@ GR_by_age <- read_excel("Gender_ratio_by_age_tidy.xlsx")
 
 rates <- read_excel("rates_tidy.xlsx")
 
-causes <- read_excel("Top_15_causes_of_death_tidy.xlsx")
 
 
 # ---- Age distribution ----
@@ -69,7 +69,6 @@ rates_long <- GR_by_age %>%
     values_to = "GenderRatio"
   )
 
-# Define the order you want
 age_order <- c("Birth", "5 years old", "15 years old", "20 years old",
                "30 years old", "40 years old", "50 years old",
                "60 years old", "70 years old", "80 years old", "90 years old", "100+ years old")
@@ -125,12 +124,73 @@ ui <- dashboardPage(
           box-shadow: 0 4px 12px rgba(0,0,0,0.4);
           border-bottom: 6px solid #0055aa;
         }
+        
+        /* Home page immage */
+  .home-image-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .home-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  }
 
         @media (min-height: 800px) { #pyramidPlot { height: calc(90vh) !important; } }
         @media (max-height: 799px) { #pyramidPlot { height: calc(75vh) !important; } }
         @media (max-width: 1600px) { .value-box, .small-box { font-size: 90%; } .box-body { padding: 10px !important; } }
         @media (max-width: 1200px) { .home-banner { font-size: 32px; padding: 40px 5px; } }
         @media (max-width: 992px) { .col-sm-3, .col-sm-9 { width: 100%; } }
+        
+        /* ---------- Professional Home Footer ---------- */
+
+        .home-footer{
+          background:#002b45;
+          color:white;
+          padding:30px 30px;
+          margin-top:40px;
+          border-top:6px solid #0055aa;
+        }
+        
+        .home-footer h4{
+          font-weight:700;
+          margin-bottom:12px;
+        }
+        
+        .home-footer p{
+          font-size:14px;
+          color:#d9e6f2;
+        }
+        
+        .home-footer ul{
+          list-style:none;
+          padding-left:0;
+        }
+        
+        .home-footer ul li{
+          margin-bottom:6px;
+          font-size:14px;
+        }
+        
+        .home-footer a{
+          color:#9fd3ff;
+          text-decoration:none;
+        }
+        
+        .home-footer a:hover{
+          text-decoration:underline;
+        }
+        
+        .footer-bottom{
+          text-align:center;
+          margin-top:25px;
+          font-size:13px;
+          color:#bfc9d3;
+        }
       "))
     ),
     
@@ -139,11 +199,22 @@ ui <- dashboardPage(
       tabItem(tabName = "home",
               div(class = "home-banner", "Welcome to the Australian Health Data Dashboard"),
               fluidRow(
-                column(width = 12, br(),
-                       p(style = "text-align:center; font-size:18px; color:#333;",
-                         "This Home page is currently empty. Add widgets or information here later.")
+                column(
+                  width = 12,
+                  div(class = "home-image-container",
+                      img(src = "home_page.png", class = "home-image")
+                  )
                 )
-              )
+              ),
+              
+              div(
+                class = "home-footer",
+                
+                div(class = "footer-bottom",
+                    HTML("© 2026 Health & Demographic Dashboard | Developed for Academic Research | 
+              Data provided by ABS and public demographic sources")
+                )
+              )    
       ),
       
       # --- Population Trend ---
@@ -1130,7 +1201,7 @@ server <- function(input, output, session) {
       )
   })
   
-}
+}  
 
 # --- Run App ---
 shinyApp(ui, server)
