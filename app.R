@@ -30,6 +30,18 @@ GR_by_age <- read_excel("Gender_ratio_by_age_tidy.xlsx")
 
 rates <- read_excel("rates_tidy.xlsx")
 
+diabetes_prevalence <- read_excel("diabetes_prevalence_by_age_2021_tidy.xlsx")
+
+diabetes_time_series_tidy <- read_excel("diabetes_prevalence_time_series_tidy.xlsx")
+
+Prevalence_of_dementia <- read_excel("Prevalence_of_dementia_2024_tidy.xlsx")
+
+Deaths_due_to_dementia <- read_excel("Deaths_due_to_dementia_2023_tidy.xlsx")
+
+diabetes_mortality <- read_excel("diabetes_mortality_2021_tidy.xlsx")
+
+causes_data <- read_excel("Top_15_causes_of_death_tidy.xlsx")
+
 
 
 # ---- Age distribution ----
@@ -76,25 +88,43 @@ age_order <- c("Birth", "5 years old", "15 years old", "20 years old",
 rates_long$Age <- factor(rates_long$Age, levels = age_order)
 
 
+# --- Causes ---
+
+data_2024 <- causes_data %>%
+  filter(Year == 2024)
+
+data_2024$Cause <- factor(
+  data_2024$Cause,
+  levels = data_2024$Cause[order(data_2024$Deaths)]
+)
+
+
 # --- UI ---
 ui <- dashboardPage(
   skin = "black",
   dashboardHeader(title = "Health Data Dashboard"),
   
   dashboardSidebar(
-    sidebarMenu(
-      id = "tabs",
-      menuItem("Home", tabName = "home"),
-      
-      # --- Main Menu with Subtabs ---
-      menuItem("Demography", icon = icon("users"),
-               menuSubItem("Popultion Trends", tabName = "trend"),
-               menuSubItem("Life Table Functions", tabName = "life"),
-               menuSubItem("Population Pyramid", tabName = "pyramid"),
-               menuSubItem("Ratios and Rates ", tabName = "rates")
-               
-               # Later more subtabs will be added 
-      )
+  sidebarMenu(
+    id = "tabs",
+    menuItem("Home", tabName = "home", icon = icon("home")),
+    
+    # Demography Menu
+    menuItem("Demography", icon = icon("users"),
+             startExpanded = TRUE,
+             menuSubItem("Population Trends", tabName = "trend"),
+             menuSubItem("Life Table Functions", tabName = "life"),
+             menuSubItem("Population Pyramid", tabName = "pyramid"),
+             menuSubItem("Ratios and Rates", tabName = "rates")
+    ),
+    
+    # Epidemiology Menu
+    menuItem("Epidemiology", icon = icon("virus"),
+             startExpanded = TRUE,
+             menuSubItem("Causes of Death", tabName = "causes_of_death"),
+             menuSubItem("Diabetes", tabName = "diabetes"),
+             menuSubItem("Dementia", tabName = "dementia")
+      )       
     )
   ),
   
@@ -197,7 +227,7 @@ ui <- dashboardPage(
     tabItems(
       # --- Home Tab ---
       tabItem(tabName = "home",
-              div(class = "home-banner", "Welcome to the Australian Health Data Dashboard"),
+              div(class = "home-banner", "Welcome to the Australian Demographic & Health Data Dashboard"),
               fluidRow(
                 column(
                   width = 12,
@@ -591,6 +621,140 @@ Overall, the trend reflects a shift from a male-heavy population in the 1960s to
           )
         ),
       
+      # -------- Diabetes ------
+      
+      tabItem(
+        tabName = "causes_of_death",
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Leading Causes of Death - 2024",
+              status = "danger",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("death_2024_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "The chart highlights the major causes of death in 2024. Dementia emerges as the leading cause, surpassing heart disease, which has traditionally been dominant. This shift underscores the growing burden of neurodegenerative conditions in aging populations. Heart disease remains a critical contributor, followed by chronic respiratory diseases, stroke, and lung cancer, all of which reflect the impact of lifestyle, environmental, and genetic factors. Diabetes also appears prominently among the top causes, emphasizing its role as a major non-communicable disease with significant mortality impact. Other notable contributors include colorectal cancer, blood cancers, pancreatic cancer, and prostate cancer, which together illustrate the wide-ranging influence of malignancies on public health. Falls, kidney and urinary diseases, and heart failure highlight vulnerabilities in older adults, while infectious conditions such as COVID-19 and flu & pneumonia continue to pose risks, though at lower levels compared to chronic diseases. Overall, the chart demonstrates that both chronic non-communicable diseases and infectious conditions remain central to mortality patterns. Since dementia and diabetes are among the top causes, we will consider them individually for deeper analysis."
+                )
+              )
+            )
+          )
+        )
+      ),
+      
+      tabItem(
+        tabName = "diabetes",
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Diabetes Prevalence by Age and Gender (2021)",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("diabetes_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "Diabetes prevalence rises with age, peaking at 75–79. Men generally have higher rates than women, especially after 50."
+                )
+              )
+            )
+          )
+        ),
+        
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Diabetes Mortality by Age and Gender (2021)",
+              status = "danger",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("diabetes_mortality_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "Diabetes deaths increase with age. Men have higher mortality than women, with the highest deaths in the 85+ group."
+                )
+              )
+            )
+          )
+        ),
+        
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Diabetes Prevalence Over Time",
+              status = "primary",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("diabetes_trend_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "Diabetes prevalence increased steadily from 2000 to 2020. Men consistently show higher prevalence than women across all years."
+                )
+              )
+            )
+          )
+        )
+      ),
+      
+       # --- Dimentia ----
+      
+      tabItem(
+        tabName = "dementia",
+        fluidRow(
+          column(
+            width = 12,
+                box(
+                  title = "Dementia Prevalence by Age Group in 2024",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  width = 12,
+                  plotlyOutput("dementia_bar_plot", height = "500px"),
+                  div(
+                    style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                    tags$p(
+                      style = "font-size:15px; font-weight:500; color:#003366;",
+                      "Dementia prevalence rises sharply with age. Women show consistently higher rates than men, with the highest prevalence in the 90+ group."
+                    )
+                  )
+                )
+              )
+           ),
+              
+        
+        fluidRow(
+          column(
+            width = 12,
+            box(
+              title = "Dementia Mortality by Age Group in 2024",
+              status = "danger",
+              solidHeader = TRUE,
+              width = 12,
+              plotlyOutput("dementia_mortality_plot", height = "500px"),
+              div(
+                style = "background-color:#cfe9f6; padding:12px; border-radius:6px; margin-top:10px;",
+                tags$p(
+                  style = "font-size:15px; font-weight:500; color:#003366;",
+                  "Dementia deaths rise with age, peaking in the 95+ group. Women consistently show higher mortality than men across all age groups."
+                )
+              )
+            )
+          )
+        )
+      ),
+      
       # --- LIFE TABLE FUNCTIONS ---
       tabItem(tabName = "life",
               fluidRow(
@@ -946,8 +1110,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
+        legend.position = "right",
+        legend.text = element_text(face = "bold", size = 10),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     
@@ -1049,8 +1213,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
+        legend.position = "right",
+        legend.text = element_text(face = "bold", size = 10),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     ggplotly(p) %>% layout(autosize = TRUE)
@@ -1069,8 +1233,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
+        legend.position = "right",
+        legend.text = element_text(face = "bold", size = 10),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     ggplotly(p) %>% layout(autosize = TRUE)
@@ -1089,8 +1253,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(size = 10, face = "bold"),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.title.y = element_text(size = 12, face = "bold"),
-        legend.position = "top",
-        legend.text = element_text(face = "bold"),
+        legend.position = "right",
+        legend.text = element_text(face = "bold", size = 10),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 16)
       )
     ggplotly(p) %>% layout(autosize = TRUE)
@@ -1199,6 +1363,205 @@ server <- function(input, output, session) {
         yaxis = list(title = "Value"),
         showlegend = TRUE
       )
+  })
+
+# ---------------- Epidemiology --------------------
+  
+# ------ Causes -------
+  
+  output$death_2024_plot <- renderPlotly({
+    
+    data_2024 <- causes_data %>%
+      filter(Year == 2024)
+    
+    data_2024$Cause <- factor(
+      data_2024$Cause,
+      levels = data_2024$Cause[order(data_2024$Deaths)]
+    )
+    
+    p <- ggplot(data_2024, aes(x = Cause, y = Deaths)) +
+      geom_col(fill = "#8b0000") +
+      coord_flip() +
+      
+      scale_y_continuous(
+        labels = function(x) formatC(x, format = "d", big.mark = ",")
+      ) +
+      
+      labs(
+        title = "Leading Causes of Death (2024)",
+        x = "Cause",
+        y = "Number of Deaths"
+      ) +
+      
+      theme_minimal(base_size = 14) +
+      theme(
+        panel.background = element_rect(fill = "#f0f0f0", color = NA),
+        axis.text.y = element_text(face = "bold"),
+        axis.text.x = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+    
+    ggplotly(p, tooltip = c("x", "y"))
+  })
+  
+  
+  
+
+# ----- Diabetes -----
+
+
+output$diabetes_plot <- renderPlotly({
+  
+  diabetes_long <- diabetes_prevalence %>% 
+    pivot_longer(
+      cols = c(Males_rate, Females_rate),
+      names_to = "Gender",
+      values_to = "Prevalence"
+    )
+  
+  
+  diabetes_long$`Age group` <- factor(
+    diabetes_long$`Age group`,
+    levels = c(
+      "0–4", "5–9", "10–14", "15–19", "20–24",
+      "25–29", "30–34", "35–39", "40–44",
+      "45–49", "50–54", "55–59", "60–64",
+      "65–69", "70–74", "75–79", "80–84", "85+"
+    )
+  )
+  
+  
+  p <- ggplot(diabetes_long, aes(x = `Age group`, y = Prevalence, fill = Gender)) +
+    geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+    scale_fill_manual(values = c("Males_rate" = "#1f77b4", "Females_rate" = "#ff7f0e")) +
+    labs(
+      x = "Age Group",
+      y = "Diabetes Prevalence per 100 population",
+      fill = "Gender"
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      axis.title.y = element_text(size = 12),
+      axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+      axis.text.y = element_text(face = "bold")
+    )
+  
+  
+  ggplotly(p, tooltip = c("x", "y", "fill"))
+})
+  
+  output$diabetes_mortality_plot <- renderPlotly({
+    
+    diabetes_mortality_long <- diabetes_mortality %>%
+      pivot_longer(
+        cols = c(Males_rate, Females_rate),
+        names_to = "Gender",
+        values_to = "Mortality"
+      )
+    
+    p <- ggplot(diabetes_mortality_long, aes(x = `Age group`, y = Mortality, fill = Gender)) +
+      geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+      scale_fill_manual(values = c("Males_rate" = "#1f77b4", "Females_rate" = "#ff7f0e")) +
+      labs(
+        x = "Age Group",
+        y = "Diabetes Mortality per 100,000 population",
+        fill = "Gender"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.title.y = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
+    
+    ggplotly(p, tooltip = c("x", "y", "fill"))
+  })  
+  
+  output$diabetes_trend_plot <- renderPlotly({
+    
+    
+    diabetes_ts_long <- diabetes_time_series_tidy %>%
+      pivot_longer(
+        cols = c(Males, Females),
+        names_to = "Gender",
+        values_to = "Prevalence"
+      )
+    
+    
+    p <- ggplot(diabetes_ts_long, aes(x = Year, y = Prevalence, color = Gender)) +
+      geom_line(size = 1.5) +
+      geom_point(size = 2) +
+      scale_color_manual(values = c("Males" = "#1f77b4", "Females" = "#ff7f0e")) +
+      labs(
+        x = "Year",
+        y = "Diabetes Prevalence (Count)",
+        color = "Gender"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
+    
+    ggplotly(p, tooltip = c("x", "y", "color"))
+  })
+  
+  
+  # ----- Dimentia -----
+  
+  output$dementia_bar_plot <- renderPlotly({
+    
+    dementia_long <- Prevalence_of_dementia %>%
+      pivot_longer(
+        cols = c(Male_rate, Female_rate),
+        names_to = "Gender",
+        values_to = "Prevalence"
+      )
+    
+    
+    p <- ggplot(dementia_long, aes(x = Age_group, y = Prevalence, fill = Gender)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      scale_fill_manual(values = c("Male_rate" = "#1f77b4", "Female_rate" = "#ff7f0e")) +
+      labs(
+        x = "Age Group",
+        y = "Dementia Prevalence per 1000 population",
+        fill = "Gender"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.title.y = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
+    
+    ggplotly(p, tooltip = c("x", "y", "fill"))
+  })
+  
+  output$dementia_mortality_plot <- renderPlotly({
+    
+    dementia_mortality_long <- Deaths_due_to_dementia %>%
+      pivot_longer(
+        cols = c(Males_rate, Females_rate),
+        names_to = "Gender",
+        values_to = "Deaths"
+      )
+    
+    p <- ggplot(dementia_mortality_long, aes(x = Age_group, y = Deaths, fill = Gender)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      scale_fill_manual(values = c("Males_rate" = "#1f77b4", "Females_rate" = "#ff7f0e")) +
+      labs(
+        x = "Age Group",
+        y = "Deaths due to Dementia per 100,000 population",
+        fill = "Gender"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.title.y = element_text(size = 12),
+        axis.text.x = element_text(angle = 45, hjust = 1, face = "bold"),
+        axis.text.y = element_text(face = "bold")
+      )
+    
+    ggplotly(p, tooltip = c("x", "y", "fill"))
   })
   
 }  
