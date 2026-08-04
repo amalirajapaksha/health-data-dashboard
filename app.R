@@ -105,6 +105,12 @@ ui <- dashboardPage(
   dashboardHeader(title = "Health Data Dashboard"),
   
   dashboardSidebar(
+    
+    div(
+      class = "logo-container",
+      img(src = "logo.png", class = "sidebar-logo"),
+    ),
+    
   sidebarMenu(
     id = "tabs",
     menuItem("Home", tabName = "home", icon = icon("home")),
@@ -221,6 +227,27 @@ ui <- dashboardPage(
           font-size:13px;
           color:#bfc9d3;
         }
+        
+       .logo-container {
+
+    text-align: center;
+
+    padding: 20px 10px;
+
+}
+
+
+.sidebar-logo {
+
+    width: 200px;
+    height: auto;
+
+    display: block;
+
+    margin: 0 auto;
+
+}
+        
       "))
     ),
     
